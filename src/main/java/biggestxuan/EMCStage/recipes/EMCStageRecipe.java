@@ -1,5 +1,6 @@
 package biggestxuan.EMCStage.recipes;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.item.Item;
@@ -15,18 +16,22 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.HashSet;
+import java.util.Set;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class EMCStageRecipe implements IRecipe<RecipeWrapper> {
     private final ResourceLocation rl;
     private final Item item;
-    private final String stage;
+    private final Set<String> stage;
+    private final boolean require;
 
-    public EMCStageRecipe(ResourceLocation rl,Item item,String stage){
+    public EMCStageRecipe(ResourceLocation rl,Item item,Set<String> stage,boolean require){
         this.rl = rl;
         this.item = item;
         this.stage = stage;
+        this.require = require;
     }
 
     @Override
@@ -69,12 +74,16 @@ public class EMCStageRecipe implements IRecipe<RecipeWrapper> {
         return NonNullList.create();
     }
 
-    public String getStage() {
+    public Set<String> getStage() {
         return stage;
     }
 
     public Item getItem() {
         return item;
+    }
+
+    public boolean isRequire() {
+        return require;
     }
 
     public static class EMCStageLimitType implements IRecipeType<EMCStageRecipe>{
@@ -87,24 +96,35 @@ public class EMCStageRecipe implements IRecipe<RecipeWrapper> {
         @Override
         public EMCStageRecipe fromJson(ResourceLocation p_199425_1_, JsonObject p_199425_2_) {
             Item item = ShapedRecipe.itemFromJson(JSONUtils.getAsJsonObject(p_199425_2_,"limit_item")).getItem();
-            String stage = JSONUtils.getAsString(p_199425_2_,"stage");
-            return new EMCStageRecipe(p_199425_1_,item,stage);
+            JsonArray stages = JSONUtils.getAsJsonArray(p_199425_2_,"stages");
+            Set<String> s = new HashSet<>();
+            stages.forEach((j)->{
+                s.add(j.getAsString());
+            });
+            boolean require = JSONUtils.getAsBoolean(p_199425_2_,"require");
+            return new EMCStageRecipe(p_199425_1_,item,s,require);
         }
 
         @Nullable
         @Override
         public EMCStageRecipe fromNetwork(ResourceLocation p_199426_1_, PacketBuffer p_199426_2_) {
             Item item = p_199426_2_.readItem().getItem();
-            String stage = p_199426_2_.readUtf();
-            return new EMCStageRecipe(p_199426_1_,item,stage);
+            int size = p_199426_2_.readInt();
+            Set<String> stages = new HashSet<>(size);
+            for (int i = 0; i < size; i++) {
+                stages.add(p_199426_2_.readUtf());
+            }
+            boolean require = p_199426_2_.readBoolean();
+            return new EMCStageRecipe(p_199426_1_,item,stages,require);
         }
 
         @Override
         public void toNetwork(PacketBuffer p_199427_1_, EMCStageRecipe p_199427_2_) {
             ItemStack stack = new ItemStack(p_199427_2_.item,1);
-            String stage = p_199427_2_.stage;
             p_199427_1_.writeItem(stack);
-            p_199427_1_.writeUtf(stage);
+            p_199427_1_.writeInt(p_199427_2_.stage.size());
+            p_199427_2_.stage.forEach(p_199427_1_::writeUtf);
+            p_199427_1_.writeBoolean(p_199427_2_.require);
         }
     }
 }

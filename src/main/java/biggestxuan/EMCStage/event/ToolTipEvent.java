@@ -3,6 +3,7 @@ package biggestxuan.EMCStage.event;
 import biggestxuan.EMCStage.EMCStage;
 import biggestxuan.EMCStage.recipes.EMCStageRecipe;
 import biggestxuan.EMCStage.utils.FormatterUtils;
+import biggestxuan.EMCStage.utils.StageUtils;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.utils.EMCHelper;
 import net.darkhax.gamestages.GameStageHelper;
@@ -18,6 +19,9 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Mod.EventBusSubscriber(
         modid = EMCStage.MODID,
         bus = Mod.EventBusSubscriber.Bus.FORGE,
@@ -30,19 +34,22 @@ public class ToolTipEvent {
         ItemStack stack = event.getItemStack();
         if(event.getPlayer() == null || stack.equals(ItemStack.EMPTY) || Minecraft.getInstance().level == null) return;
         long value;
-        String stage = "";
+        Set<String> stage = new HashSet<>();
         long sellValue = EMCHelper.getEmcSellValue(stack);
         value = EMCHelper.getEmcValue(stack);
         boolean isTrans = true;
+        boolean rq = true;
         if(value > 0L){
             RecipeManager manager = Minecraft.getInstance().level.getRecipeManager();
             for(EMCStageRecipe recipe:manager.getAllRecipesFor(EMCStageRecipe.EMCStageLimitType.INSTANCE)){
                 if(recipe.getItem().equals(stack.getItem())){
-                    if(GameStageHelper.hasStage(event.getPlayer(),recipe.getStage())){
+                    Set<String> required = StageUtils.playerStage(recipe,event.getPlayer());
+                    rq = recipe.isRequire();
+                    if(required.size() == 0){
                         break;
                     }
                     isTrans = false;
-                    stage = recipe.getStage();
+                    stage = required;
                 }
             }
             IFormattableTextComponent normal = EMCStage.tc("emc",FormatterUtils.format(value));
@@ -67,13 +74,36 @@ public class ToolTipEvent {
             if(stack.getCount() > 1){
                 event.getToolTip().add(stack_tip);
             }
-            if(!isTrans && stage.equals("disabled")){
+            if(!isTrans && stage.contains("disabled")){
                 event.getToolTip().add(EMCStage.tc("emc_disable"));
                 return;
             }
-            if(!isTrans && !stage.equals("")){
-                event.getToolTip().add(EMCStage.tc("emc_locked",stage));
+            if(!isTrans && stage.size() != 0){
+                String text = rq ? "emc_locked_and" : "emc_locked_or";
+                event.getToolTip().add(EMCStage.tc(text,new s(stage).toString()));
             }
+        }
+    }
+
+    static class s{
+        private final Set<String> strings;
+
+        s(Set<String> strings){
+            this.strings = strings;
+        }
+
+        @Override
+        public String toString(){
+            String a = "";
+            int i = 0;
+            for(String s : strings){
+                a += s;
+                i += 1;
+                if(i != strings.size()){
+                    a += ",";
+                }
+            }
+            return a;
         }
     }
 }
