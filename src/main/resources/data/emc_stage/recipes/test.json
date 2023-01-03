@@ -1,0 +1,7 @@
+{
+  "type": "emc_stage:stage_limit",
+  "limit_item": {
+    "item":"minecraft:bedrock"
+  },
+  "stage": "two"
+}

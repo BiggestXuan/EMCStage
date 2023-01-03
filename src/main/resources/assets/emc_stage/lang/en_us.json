@@ -1,0 +1,7 @@
+{
+  "tooltip.emc_stage.emc": "§eEMC： %d",
+  "tooltip.emc_stage.emc_stack": "§eEMC Total： %d",
+  "tooltip.emc_stage.emc_disable": "§eThis item cannot be condensed",
+  "tooltip.emc_stage.emc_locked": "§eYou need %d §estage to condense",
+  "tooltip.emc_stage.sell_value": " §e(%d§e)"
+}

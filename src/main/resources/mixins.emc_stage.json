@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "biggestxuan.EMCStage.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "emc_stage.refmap.json",
+  "mixins": [],
+  "client": ["EMCToolTipMixin"],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

@@ -1,0 +1,7 @@
+{
+  "tooltip.emc_stage.emc": "§eEMC： %d",
+  "tooltip.emc_stage.emc_stack": "§eEMC总和： %d",
+  "tooltip.emc_stage.emc_disable": "§e该物品无法被凝聚",
+  "tooltip.emc_stage.emc_locked": "§e你需要 %d §e阶段以凝聚此物品",
+  "tooltip.emc_stage.sell_value": " §e(%d§e)"
+}
